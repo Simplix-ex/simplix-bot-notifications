@@ -25,9 +25,15 @@ export const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "your-webhook-secret
 
 app.use(bodyParser.json());
 
+app.use(`/${BASE_PATH}/service/webhook`, async (req, res, next) => {
+  const signature = req.headers["x-hub-signature-256"];
+  const body = await req.text();
 
+  if (!await verifySignature(signature, body, WEBHOOK_SECRET)) {
+    console.warn("Git Notifications:⚠️ Assinatura inválida. Rejeitando o webhook.");
+    return res.status(401).send("Unauthorized");
+  }
 
-app.use(`/${BASE_PATH}/service/webhook`, verifySignature, async (req, res, next) => {
   const event = req.headers["x-github-event"];
   const action = req.body.action;
   const payload = req.body;
