@@ -19,12 +19,15 @@ import {
 
 const app = express();
 const PORT = process.env.PORT || 4002;
+const BASE_PATH = "notify-api";
 
 export const WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || "your-webhook-secret";
 
 app.use(bodyParser.json());
 
-app.use("/service/webhook", verifySignature, async (req, res, next) => {
+
+
+app.use(`/${BASE_PATH}/service/webhook`, verifySignature, async (req, res, next) => {
   const event = req.headers["x-github-event"];
   const action = req.body.action;
   const payload = req.body;
@@ -61,14 +64,14 @@ app.use("/service/webhook", verifySignature, async (req, res, next) => {
   return res.status(200).send("OK");
 });
 
-app.use("/health", (_req, res) => {
+app.use(`/${BASE_PATH}/health`, (_req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
 app.listen(PORT, () => {
   console.log(`Git Notifications:🚀 Webhook server rodando na porta ${PORT}`);
-  console.log(`Git Notifications:📡 Endpoint: http://localhost:${PORT}/webhook`);
-  console.log(`Git Notifications:ℹ️ Health check: http://localhost:${PORT}/health`);
+  console.log(`Git Notifications:📡 Endpoint: http://localhost:${PORT}/${BASE_PATH}/service/webhook`);
+  console.log(`Git Notifications:ℹ️ Health check: http://localhost:${PORT}/${BASE_PATH}/health`);
   console.log(`Git Notifications:🔐 Secret configurado: ${WEBHOOK_SECRET ? "Sim" : "Não"}`);
   console.log(`Git Notifications:ℹ️ Certifique-se de configurar o webhook no GitHub com o mesmo secret.`);
   console.log(
